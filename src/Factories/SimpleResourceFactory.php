@@ -100,7 +100,7 @@ class SimpleResourceFactory
     {
         switch ($details->getTransformation()){
             case ResourceValueTransformation::Encryption:
-                if (self::$encrypter !== null){
+                if (self::$encrypter !== null && $value !== null){
                     $value = self::$encrypter->encryptId($value);
                 }
                 break;
