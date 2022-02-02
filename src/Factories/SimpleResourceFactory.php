@@ -123,20 +123,24 @@ class SimpleResourceFactory
                 );
                 break;
             case ResourceDetailType::Link:
-                $resource->links->add(
-                    new Link(
-                        name: $details->getName(),
-                        href: $additionalValue . $value,
-                    )
-                );
+                if ($value !== null) {
+                    $resource->links->add(
+                        new Link(
+                            name: $details->getName(),
+                            href: $additionalValue . $value,
+                        )
+                    );
+                }
                 break;
             case ResourceDetailType::RelationshipLink:
-                $resource->relationship($details->getName())->links->add(
-                    new Link(
-                        name: 'related',
-                        href: $additionalValue . $value,
-                    )
-                );
+                if ($value !== null) {
+                    $resource->relationship($details->getName())->links->add(
+                        new Link(
+                            name: 'related',
+                            href: $additionalValue . $value,
+                        )
+                    );
+                }
                 break;
         }
     }
