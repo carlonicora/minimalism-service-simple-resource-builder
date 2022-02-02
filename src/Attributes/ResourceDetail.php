@@ -16,7 +16,7 @@ class ResourceDetail
      */
     public function __construct(
         private ResourceDetailType $type,
-        private ?ResourceValueTransformation $transformation,
+        private ?ResourceValueTransformation $transformation=null,
         private ?string            $name=null,
         private ?string            $linkProperty=null,
     )

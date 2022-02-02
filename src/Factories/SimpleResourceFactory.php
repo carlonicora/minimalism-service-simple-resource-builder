@@ -93,9 +93,17 @@ class SimpleResourceFactory
         mixed $value,
     ): void
     {
-        if (self::$encrypter !== null && $details->getTransformation() === ResourceValueTransformation::Encryption){
-            $value = self::$encrypter->encryptId($value);
+        switch ($details->getTransformation()){
+            case ResourceValueTransformation::Encryption:
+                if (self::$encrypter !== null){
+                    $value = self::$encrypter->encryptId($value);
+                }
+                break;
+            case ResourceValueTransformation::IntDateTime:
+                $value = ($value !== null ? date('Y-m-d H:i:s', $value) : null);
+                break;
         }
+
 
         switch ($details->getType()){
             case ResourceDetailType::Id:
