@@ -3,19 +3,20 @@ namespace CarloNicora\Minimalism\Services\SimpleResourceBuilder\Attributes;
 
 use Attribute;
 use CarloNicora\Minimalism\Services\SimpleResourceBuilder\Enums\ResourceDetailType;
+use CarloNicora\Minimalism\Services\SimpleResourceBuilder\Enums\ResourceValueTransformation;
 
 #[Attribute]
 class ResourceDetail
 {
     /**
      * @param ResourceDetailType $type
-     * @param bool $isEncrypted
+     * @param ResourceValueTransformation|null $transformation
      * @param string|null $name
      * @param string|null $linkProperty
      */
     public function __construct(
         private ResourceDetailType $type,
-        private bool               $isEncrypted=false,
+        private ?ResourceValueTransformation $transformation,
         private ?string            $name=null,
         private ?string            $linkProperty=null,
     )
@@ -60,11 +61,11 @@ class ResourceDetail
     }
 
     /**
-     * @return bool
+     * @return ResourceValueTransformation|null
      */
-    public function isEncrypted(
-    ): bool
+    public function getTransformation(
+    ): ?ResourceValueTransformation
     {
-        return $this->isEncrypted;
+        return $this->transformation;
     }
 }

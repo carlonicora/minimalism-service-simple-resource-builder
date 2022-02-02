@@ -7,6 +7,7 @@ use CarloNicora\Minimalism\Interfaces\Encrypter\Interfaces\EncrypterInterface;
 use CarloNicora\Minimalism\Services\SimpleResourceBuilder\Attributes\Resource;
 use CarloNicora\Minimalism\Services\SimpleResourceBuilder\Attributes\ResourceDetail;
 use CarloNicora\Minimalism\Services\SimpleResourceBuilder\Enums\ResourceDetailType;
+use CarloNicora\Minimalism\Services\SimpleResourceBuilder\Enums\ResourceValueTransformation;
 use Exception;
 use ReflectionObject;
 
@@ -51,20 +52,24 @@ class SimpleResourceFactory
                     $resourceDetail->setName($property->getName());
                 }
 
-                $value = null;
-
+                $additionalValue = null;
                 if (array_key_exists('linkProperty', $attributes[0]->getArguments())){
-                    $value = $reflection->getProperty($attributes[0]->getArguments()['linkProperty'])?->getValue();
+                    $additionalProperty = $reflection->getProperty($attributes[0]->getArguments()['linkProperty']);
+                    /** @noinspection PhpExpressionResultUnusedInspection */
+                    $additionalProperty->setAccessible(true);
+
+                    $additionalValue = $additionalProperty->getValue();
                 }
 
                 /** @noinspection PhpExpressionResultUnusedInspection */
                 $property->setAccessible(true);
 
-                $value = ($value ?? '') . $property->getValue();
+                $value = $property->getValue();
 
                 self::setProperty(
                     resource: $response,
                     details: $resourceDetail,
+                    additionalValue: $additionalValue,
                     value: $value,
                 );
             }
@@ -76,6 +81,7 @@ class SimpleResourceFactory
     /**
      * @param ResourceObject $resource
      * @param ResourceDetail $details
+     * @param mixed $additionalValue
      * @param mixed $value
      * @return void
      * @throws Exception
@@ -83,10 +89,11 @@ class SimpleResourceFactory
     private static function setProperty(
         ResourceObject $resource,
         ResourceDetail $details,
+        mixed $additionalValue,
         mixed $value,
     ): void
     {
-        if (self::$encrypter !== null && $details->isEncrypted()){
+        if (self::$encrypter !== null && $details->getTransformation() === ResourceValueTransformation::Encryption){
             $value = self::$encrypter->encryptId($value);
         }
 
@@ -110,7 +117,7 @@ class SimpleResourceFactory
                 $resource->links->add(
                     new Link(
                         name: $details->getName(),
-                        href: $value,
+                        href: $additionalValue . $value,
                     )
                 );
                 break;
@@ -118,7 +125,7 @@ class SimpleResourceFactory
                 $resource->relationship($details->getName())->links->add(
                     new Link(
                         name: 'related',
-                        href: $value,
+                        href: $additionalValue . $value,
                     )
                 );
                 break;
