@@ -13,12 +13,14 @@ class ResourceDetail
      * @param ResourceValueTransformation|null $transformation
      * @param string|null $name
      * @param string|null $linkProperty
+     * @param string|null $limitingProperty
      */
     public function __construct(
         private ResourceDetailType $type,
         private ?ResourceValueTransformation $transformation=null,
-        private ?string            $name=null,
-        private ?string            $linkProperty=null,
+        private ?string $name=null,
+        private ?string $linkProperty=null,
+        private ?string $limitingProperty=null,
     )
     {
     }
@@ -58,6 +60,15 @@ class ResourceDetail
     ): ?string
     {
         return $this->linkProperty;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLimitingProperty(
+    ): ?string
+    {
+        return $this->limitingProperty;
     }
 
     /**

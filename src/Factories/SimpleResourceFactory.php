@@ -43,30 +43,40 @@ class SimpleResourceFactory
         foreach ($reflection->getProperties() as $property) {
             $attributes = $property->getAttributes(ResourceDetail::class);
             if (!empty($attributes)) {
-                /** @var ResourceDetail $resourceDetail */
-                $resourceDetail = $attributes[0]->newInstance();
-                if (!array_key_exists('name', $attributes[0]->getArguments())) {
-                    $resourceDetail->setName($property->getName());
-                }
-
-                $additionalValue = null;
-                if (array_key_exists('linkProperty', $attributes[0]->getArguments())) {
-                    $additionalProperty = $reflection->getProperty($attributes[0]->getArguments()['linkProperty']);
+                $limited = false;
+                if (array_key_exists('limitingProperty', $attributes[0]->getArguments())) {
+                    $limitingProperty = $reflection->getProperty($attributes[0]->getArguments()['limitingProperty']);
                     /** @noinspection PhpExpressionResultUnusedInspection */
-                    $additionalProperty->setAccessible(true);
-                    $additionalValue = $additionalProperty->getValue($object);
+                    $limitingProperty->setAccessible(true);
+                    $limited = $limitingProperty->getValue($object);
                 }
 
-                /** @noinspection PhpExpressionResultUnusedInspection */
-                $property->setAccessible(true);
-                $value = $property->getValue($object);
+                if (!$limited) {
+                    /** @var ResourceDetail $resourceDetail */
+                    $resourceDetail = $attributes[0]->newInstance();
+                    if (!array_key_exists('name', $attributes[0]->getArguments())) {
+                        $resourceDetail->setName($property->getName());
+                    }
 
-                self::setProperty(
-                    resource: $response,
-                    details: $resourceDetail,
-                    additionalValue: $additionalValue,
-                    value: $value,
-                );
+                    $additionalValue = null;
+                    if (array_key_exists('linkProperty', $attributes[0]->getArguments())) {
+                        $additionalProperty = $reflection->getProperty($attributes[0]->getArguments()['linkProperty']);
+                        /** @noinspection PhpExpressionResultUnusedInspection */
+                        $additionalProperty->setAccessible(true);
+                        $additionalValue = $additionalProperty->getValue($object);
+                    }
+
+                    /** @noinspection PhpExpressionResultUnusedInspection */
+                    $property->setAccessible(true);
+                    $value = $property->getValue($object);
+
+                    self::setProperty(
+                        resource: $response,
+                        details: $resourceDetail,
+                        additionalValue: $additionalValue,
+                        value: $value,
+                    );
+                }
             }
         }
 
