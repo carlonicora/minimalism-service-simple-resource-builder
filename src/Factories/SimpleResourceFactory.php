@@ -36,35 +36,30 @@ class SimpleResourceFactory
         mixed $object,
     ): ResourceObject
     {
-        $response = new ResourceObject();
-
         $reflection = new ReflectionObject($object);
         /** @var Resource $resource */
         $resource = $reflection->getAttributes(Resource::class)[0]->newInstance();
-        $response->type = $resource->getType();
-
-        foreach ($reflection->getProperties() as $property){
+        $response = new ResourceObject($resource->getType());
+        foreach ($reflection->getProperties() as $property) {
             $attributes = $property->getAttributes(ResourceDetail::class);
-            if (!empty($attributes)){
+            if (!empty($attributes)) {
                 /** @var ResourceDetail $resourceDetail */
                 $resourceDetail = $attributes[0]->newInstance();
-                if (!array_key_exists('name', $attributes[0]->getArguments())){
+                if (!array_key_exists('name', $attributes[0]->getArguments())) {
                     $resourceDetail->setName($property->getName());
                 }
 
                 $additionalValue = null;
-                if (array_key_exists('linkProperty', $attributes[0]->getArguments())){
+                if (array_key_exists('linkProperty', $attributes[0]->getArguments())) {
                     $additionalProperty = $reflection->getProperty($attributes[0]->getArguments()['linkProperty']);
                     /** @noinspection PhpExpressionResultUnusedInspection */
                     $additionalProperty->setAccessible(true);
-
-                    $additionalValue = $additionalProperty->getValue();
+                    $additionalValue = $additionalProperty->getValue($object);
                 }
 
                 /** @noinspection PhpExpressionResultUnusedInspection */
                 $property->setAccessible(true);
-
-                $value = $property->getValue();
+                $value = $property->getValue($object);
 
                 self::setProperty(
                     resource: $response,
@@ -108,12 +103,18 @@ class SimpleResourceFactory
         switch ($details->getType()){
             case ResourceDetailType::Id:
                 $resource->id = $value;
+                $resource->links->add(
+                    new Link(
+                        name: 'self',
+                        href: $additionalValue . $value,
+                    )
+                );
                 break;
             case ResourceDetailType::Attribute:
-                    $resource->attributes->add(
-                        name: $details->getName(),
-                        value: $value,
-                    );
+                $resource->attributes->add(
+                    name: $details->getName(),
+                    value: $value,
+                );
                 break;
             case ResourceDetailType::Meta:
                 $resource->meta->add(
