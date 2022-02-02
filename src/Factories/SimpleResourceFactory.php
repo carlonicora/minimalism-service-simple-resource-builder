@@ -91,6 +91,9 @@ class SimpleResourceFactory
         }
 
         switch ($details->getType()){
+            case ResourceDetailType::Id:
+                $resource->id = $value;
+                break;
             case ResourceDetailType::Attribute:
                     $resource->attributes->add(
                         name: $details->getName(),
